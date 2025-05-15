@@ -24,19 +24,18 @@ pipeline {
     stage ("Compile") {
       steps {
         container("maven") {
-          sh 'ls -lRt /home/jenkins/agent/workspace/PetClinic/'
-          // sh 'mvn clean compile'
+          sh 'mvn clean compile'
         }
       }
     }
 
-    // stage ("Test") {
-    //   steps {
-    //     container("maven") {
-    //       sh 'mvn test'
-    //     }
-    //   }
-    // }
+    stage ("Test") {
+      steps {
+        container("maven") {
+          sh 'mvn test'
+        }
+      }
+    }
   }
 
 }

@@ -79,7 +79,6 @@ nbdist/
 *.sublime-workspace
 
 # Local configuration files
-*.properties
 *.prefs
 
 # Unit test reports
