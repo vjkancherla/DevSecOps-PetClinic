@@ -3,7 +3,7 @@
 pipeline {
   agent {
     kubernetes {
-      yamlFile "Petclinic-Real/jenkins-agent-pod-template.yml"
+      yamlFile "jenkins-agent-pod-template.yml"
     }
   }
 
