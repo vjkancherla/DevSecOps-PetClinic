@@ -21,12 +21,22 @@ pipeline {
   }
 
   stages {
-    stage ("Build") {
+    stage ("Compile") {
       steps {
         container("maven") {
-            sh 'cd Petclinic-Real'
-            sh 'ls -l'
-            sh 'mvn clean package'
+          dir("Petclinic-Real") {
+            sh 'mvn clean compile'
+          }
+        }
+      }
+    }
+
+    stage ("Test") {
+      steps {
+        container("maven") {
+          dir("Petclinic-Real") {
+            sh 'mvn test'
+          }
         }
       }
     }
