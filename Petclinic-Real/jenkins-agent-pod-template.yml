@@ -13,12 +13,9 @@ spec:
         mountPath: /home/jenkins/agent
 
   - name: maven
-    image: maven:3.8.6-openjdk-17
+    image: maven:alpine
     command:
-    command:
-    - sleep
-    args:
-    - 9999999
+    - cat
     tty: true
     volumeMounts:
       - name: maven-cache
@@ -27,7 +24,7 @@ spec:
         mountPath: /home/jenkins/agent
 
   - name: kaniko
-    image: gcr.io/kaniko-project/executor:v1.12.0
+    image: gcr.io/kaniko-project/executor:debug
     command:
     - sleep
     args:
