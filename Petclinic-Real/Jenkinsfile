@@ -3,12 +3,13 @@
 pipeline {
   agent {
     kubernetes {
-      yamlFile "./jenkins-agent-pod-template.yml"
+      yamlFile "Petclinic-Real/jenkins-agent-pod-template.yml"
     }
   }
 
   options {
       disableConcurrentBuilds()
+      buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '5'))
   }
 
   environment {
@@ -17,13 +18,11 @@ pipeline {
     GIT_COMMIT_HASH = sh (script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
     IMAGE_REPO = "vjkancherla/petclinic"
     IMAGE_TAG = "${GIT_COMMIT_HASH}"
-
   }
 
   stages {
     stage ("Build") {
       steps {
-        sh 'ls -lRt'
         container("maven") {
             sh 'mvn clean package'
         }
