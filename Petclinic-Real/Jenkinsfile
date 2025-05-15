@@ -24,6 +24,7 @@ pipeline {
     stage ("Build") {
       steps {
         container("maven") {
+            sh 'cd Petclinic-Real'
             sh 'mvn clean package'
         }
       }
