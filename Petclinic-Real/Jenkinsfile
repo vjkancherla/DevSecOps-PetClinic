@@ -1,0 +1,74 @@
+#!/usr/bin/groovy
+
+pipeline {
+  agent {
+    kubernetes {
+      yamlFile "jenkins-agents-pt.yaml"
+    }
+  }
+
+  options {
+      disableConcurrentBuilds()
+  }
+
+  environment {
+    PROJECT = "PetClinic"
+    REGISTRY_USER = "vjkancherla"
+    GIT_COMMIT_HASH = sh (script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
+    IMAGE_REPO = "vjkancherla/petclinic"
+    IMAGE_TAG = "${GIT_COMMIT_HASH}"
+  }
+
+  stages  {
+    stage("Build") {
+      steps {
+        container("maven") {
+            sh 'mvn clean package'
+      }
+    }
+
+    // stage("Deploy-To-Dev") {
+    //   when {
+    //     // skip this stage unless branch is NOT master
+    //     not {
+    //       branch "master"
+    //     }
+    //   }
+    //   steps {
+    //     deploy_to_dev()
+    //   }
+    // }
+
+    // stage("Verify-Deployment-To-Dev") {
+    //   when {
+    //     // skip this stage unless branch is NOT master
+    //     not {
+    //       branch "master"
+    //     }
+    //   }
+    //   steps {
+    //     verify_deployment("dev")
+    //   }
+    // }
+
+  }
+}
+
+// def package_and_push_image() {
+//   container("kaniko") {
+//     sh "/kaniko/executor --context `pwd`/go_application --dockerfile Dockerfile --destination ${IMAGE_REPO}:${IMAGE_TAG}"
+//   }
+// }
+
+// def deploy_to_dev() {
+//   container("k8s") {
+//     sh "helm upgrade --install --values helm-chart/namespaces/dev/values.yaml --set image.repository=${IMAGE_REPO} --set image.tag=${IMAGE_TAG} helm-go-dev helm-chart/"
+//   }
+// }
+
+// def verify_deployment(env) {
+//   sleep(30)
+//   container("k8s") {
+//     sh "kubectl run curl --image=curlimages/curl -i --rm --restart=Never -- curl gceme-frontend-${env}.${env}.svc.cluster.local:80"
+//   }
+// }

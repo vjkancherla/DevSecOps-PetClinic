@@ -1,0 +1,86 @@
+# Compiled class files
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Maven-specific files
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE-specific files
+.idea/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+bin/
+.factorypath
+
+# Eclipse-specific files
+.metadata/
+
+# NetBeans-specific files
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# VS Code-specific files
+.vscode/
+
+# Mac OS-specific files
+.DS_Store
+
+# Other
+*.swp
+*.swo
+*~
+*.bak
+*.orig
+*.cache
+*.diff
+*.patch
+*.tmp
+*.rej
+*.out
+*.dump
+*.pid
+*.seed
+*.pid.lock
+*.lock
+*.sublime-workspace
+
+# Local configuration files
+*.properties
+*.prefs
+
+# Unit test reports
+TEST*.xml

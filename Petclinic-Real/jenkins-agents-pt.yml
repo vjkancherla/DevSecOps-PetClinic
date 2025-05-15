@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jenkins-agent
+spec:
+  containers:
+  - name: jnlp
+    image: jenkins/inbound-agent:latest
+    args: ['$(JENKINS_SECRET)', '$(JENKINS_NAME)']
+    volumeMounts:
+      - name: workspace-volume
+        mountPath: /home/jenkins/agent
+
+  - name: maven
+    image: maven:3.8.6-openjdk-17
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+      - name: maven-cache
+        mountPath: /root/.m2
+      - name: workspace-volume
+        mountPath: /home/jenkins/agent
+
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:v1.12.0
+    command:
+    - /busybox/cat
+    tty: true
+    volumeMounts:
+      - name: kaniko-secret
+        mountPath: /kaniko/.docker
+      - name: workspace-volume
+        mountPath: /home/jenkins/agent
+
+  - name: kubectl-helm
+    image: alpine/k8s:1.26.6
+    command:
+    - cat
+    tty: true
+    env:
+    - name: KUBECONFIG
+      value: /home/jenkins/agent/kubeconfig
+    volumeMounts:
+      - name: workspace-volume
+        mountPath: /home/jenkins/agent
+
+  - name: sonar-scanner
+    image: sonarsource/sonar-scanner-cli:latest
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+      - name: workspace-volume
+        mountPath: /home/jenkins/agent
+
+  - name: trivy
+    image: aquasec/trivy:0.45.1
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+      - name: workspace-volume
+        mountPath: /home/jenkins/agent
+
+  volumes:
+  - name: workspace-volume
+    emptyDir: {}
+  - name: maven-cache
+    emptyDir: {}
