@@ -69,3 +69,9 @@ spec:
     emptyDir: {}
   - name: maven-cache
     emptyDir: {}
+  - name: kaniko-secret
+    secret:
+      secretName: docker-credentials
+      items:
+      - key: .dockerconfigjson
+        path: config.json
