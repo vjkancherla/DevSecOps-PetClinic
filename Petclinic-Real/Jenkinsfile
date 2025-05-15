@@ -25,6 +25,7 @@ pipeline {
       steps {
         container("maven") {
             sh 'cd Petclinic-Real'
+            sh 'ls -l'
             sh 'mvn clean package'
         }
       }
