@@ -15,7 +15,10 @@ spec:
   - name: maven
     image: maven:3.8.6-openjdk-17
     command:
-    - cat
+    command:
+    - sleep
+    args:
+    - 9999999
     tty: true
     volumeMounts:
       - name: maven-cache
@@ -26,7 +29,9 @@ spec:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:v1.12.0
     command:
-    - /busybox/cat
+    - sleep
+    args:
+    - 9999999
     tty: true
     volumeMounts:
       - name: kaniko-secret
