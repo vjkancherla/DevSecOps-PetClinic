@@ -1,4 +1,4 @@
-FROM tomcat:9.0-jre11-alpine
+FROM tomcat:9.0.105-jre11-temurin-noble
 
 COPY target/petclinic.war /usr/local/tomcat/webapps/
 

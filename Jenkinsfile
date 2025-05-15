@@ -24,9 +24,7 @@ pipeline {
     stage ("Compile") {
       steps {
         container("maven") {
-          dir("Petclinic-Real") {
-            sh 'mvn clean compile'
-          }
+          sh 'mvn clean compile'
         }
       }
     }
@@ -34,9 +32,7 @@ pipeline {
     stage ("Test") {
       steps {
         container("maven") {
-          dir("Petclinic-Real") {
-            sh 'mvn test'
-          }
+          sh 'mvn test'
         }
       }
     }
