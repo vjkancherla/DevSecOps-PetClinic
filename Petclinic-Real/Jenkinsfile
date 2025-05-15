@@ -19,11 +19,12 @@ pipeline {
     IMAGE_TAG = "${GIT_COMMIT_HASH}"
   }
 
-  stages  {
-    stage("Build") {
+  stages {
+    stage ("Build") {
       steps {
         container("maven") {
             sh 'mvn clean package'
+        }
       }
     }
   }
