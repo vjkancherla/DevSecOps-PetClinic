@@ -36,6 +36,29 @@ pipeline {
         }
       }
     }
-  }
 
-}
+    stage("Sonarqube Analysis "){
+      steps {
+        withSonarQubeEnv(installationName: "SonarQube-on-Docker") {
+          container("sonar-scanner") {
+            // uses sonar-project.properties
+            sh 'sonar-scanner'
+          }
+        }
+      }
+    }
+
+    stage("quality gate"){
+      steps {
+        timeout(time: 2, unit: 'MINUTES') {
+          def qG = waitForQualityGate()
+          if (qG.status != 'OK') {
+              error "Pipeline aborted due to quality gate failure: ${qG.status}"
+          }
+        }
+      } 
+    } 
+
+  } // End Stages
+
+} // End pipeline
