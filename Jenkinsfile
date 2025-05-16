@@ -41,7 +41,7 @@ pipeline {
       steps {
         withSonarQubeEnv(installationName: "SonarQube-on-Docker") {
           container("sonar-scanner") {
-            // uses sonar-project.properties
+            // uses sonar-project.properties to identify the resources to scan
             sh 'sonar-scanner'
           }
         }
@@ -50,12 +50,15 @@ pipeline {
 
     stage("quality gate"){
       steps {
-        timeout(time: 2, unit: 'MINUTES') {
-          def qG = waitForQualityGate()
-          if (qG.status != 'OK') {
-              error "Pipeline aborted due to quality gate failure: ${qG.status}"
+        script {
+          timeout(time: 2, unit: 'MINUTES') {
+            def qG = waitForQualityGate()
+            if (qG.status != 'OK') {
+                error "Pipeline aborted due to quality gate failure: ${qG.status}"
+            }
           }
         }
+        
       } 
     } 
 
