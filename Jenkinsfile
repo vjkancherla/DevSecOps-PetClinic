@@ -21,19 +21,20 @@ pipeline {
   }
 
   stages {
-    // Run compile and test sequentially, while running SCA and Wait-for-SCA-analysis sequentially in parallel
+  
+    stage ("Compile") {
+      steps {
+        container("maven") {
+          sh 'mvn clean compile'
+        }
+      }
+    }
+
+    // Run  Mvn-test and SCA in parallel
     stage("Parallel Execution") {
       parallel {
-        stage('Compile then Test') {
+        stage('Mvn Test') {
           stages {
-            stage ("Compile") {
-              steps {
-                container("maven") {
-                  sh 'mvn clean compile'
-                }
-              }
-            }
-
             stage ("Test") {
               steps {
                 container("maven") {
@@ -44,7 +45,7 @@ pipeline {
           }
         }
 
-        stage('SCA then Wait') {
+        stage('Static Code Analysis') {
           stages {
             stage("Sonarqube Analysis"){
               steps {
