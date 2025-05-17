@@ -21,33 +21,21 @@ pipeline {
   }
 
   stages {
-  
-    stage ("Compile") {
+
+    stage ("Mvn compile, test and package") {
       steps {
         container("maven") {
-          sh 'mvn clean compile'
+          // You don't need to explicitly run compile or test before package because Maven handles it.
+          sh 'mvn clean package'
         }
       }
     }
 
-    // Run  Mvn-test and SCA in parallel
-    stage("Parallel Execution") {
+    stage ("Static Code Analysis Parallel Execution") {
       parallel {
-        stage('Mvn Test') {
+        stage('SCA with SonaqQube') {
           stages {
-            stage ("Test") {
-              steps {
-                container("maven") {
-                  sh 'mvn test'
-                }
-              }
-            }
-          }
-        }
-
-        stage('Static Code Analysis') {
-          stages {
-            stage("Sonarqube Analysis"){
+            stage("Sonarqube Analysis "){
               steps {
                 withSonarQubeEnv(installationName: "SonarQube-on-Docker") {
                   container("sonar-scanner") {
@@ -72,49 +60,20 @@ pipeline {
             } 
           }
         }
+        
+        stage('OWASP analysis') {
+          stages {
+            stage("OWASP Dependency Check") {
+              steps {
+                dependencyCheck additionalArguments: '--scan ./ --format ALL --prettyPrint', odcInstallation: 'OWASP-DP-Check'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.html'
+              }
+            }
+          }
+        }
+
       }
     }
-
-
-    // stage ("Compile") {
-    //   steps {
-    //     container("maven") {
-    //       sh 'mvn clean compile'
-    //     }
-    //   }
-    // }
-
-    // stage ("Test") {
-    //   steps {
-    //     container("maven") {
-    //       sh 'mvn test'
-    //     }
-    //   }
-    // }
-
-    // stage("Sonarqube Analysis "){
-    //   steps {
-    //     withSonarQubeEnv(installationName: "SonarQube-on-Docker") {
-    //       container("sonar-scanner") {
-    //         // uses sonar-project.properties to identify the resources to scan
-    //         sh 'sonar-scanner'
-    //       }
-    //     }
-    //   }
-    // }
-
-    // stage("quality gate"){
-    //   steps {
-    //     script {
-    //       timeout(time: 5, unit: 'MINUTES') {
-    //         def qG = waitForQualityGate()
-    //         if (qG.status != 'OK') {
-    //             error "Pipeline aborted due to quality gate failure: ${qG.status}"
-    //         }
-    //       }
-    //     } 
-    //   } 
-    // } 
 
   } // End Stages
 
