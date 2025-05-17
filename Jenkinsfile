@@ -21,99 +21,99 @@ pipeline {
   }
 
   stages {
-    // // Run compile and test sequentially, while running SCA and Wait-for-SCA-analysis sequentially in parallel
-    // stage("Parallel Execution") {
-    //   parallel {
-    //     stage('Compile then Test') {
-    //       stages {
-    //         stage ("Compile") {
-    //           steps {
-    //             container("maven") {
-    //               sh 'mvn clean compile'
-    //             }
-    //           }
-    //         }
+    // Run compile and test sequentially, while running SCA and Wait-for-SCA-analysis sequentially in parallel
+    stage("Parallel Execution") {
+      parallel {
+        stage('Compile then Test') {
+          stages {
+            stage ("Compile") {
+              steps {
+                container("maven") {
+                  sh 'mvn clean compile'
+                }
+              }
+            }
 
-    //         stage ("Test") {
-    //           steps {
-    //             container("maven") {
-    //               sh 'mvn test'
-    //             }
-    //           }
-    //         }
-    //       }
+            stage ("Test") {
+              steps {
+                container("maven") {
+                  sh 'mvn test'
+                }
+              }
+            }
+          }
+        }
+
+        stage('SCA then Wait') {
+          stages {
+            stage("Sonarqube Analysis"){
+              steps {
+                withSonarQubeEnv(installationName: "SonarQube-on-Docker") {
+                  container("sonar-scanner") {
+                    // uses sonar-project.properties to identify the resources to scan
+                    sh 'sonar-scanner'
+                  }
+                }
+              }
+            }
+
+            stage("quality gate"){
+              steps {
+                script {
+                  timeout(time: 5, unit: 'MINUTES') {
+                    def qG = waitForQualityGate()
+                    if (qG.status != 'OK') {
+                        error "Pipeline aborted due to quality gate failure: ${qG.status}"
+                    }
+                  }
+                } 
+              } 
+            } 
+          }
+        }
+      }
+    }
+
+
+    // stage ("Compile") {
+    //   steps {
+    //     container("maven") {
+    //       sh 'mvn clean compile'
     //     }
+    //   }
+    // }
 
-    //     stage('SCA then Wait') {
-    //       stages {
-    //         stage("Sonarqube Analysis"){
-    //           steps {
-    //             withSonarQubeEnv(installationName: "SonarQube-on-Docker") {
-    //               container("sonar-scanner") {
-    //                 // uses sonar-project.properties to identify the resources to scan
-    //                 sh 'sonar-scanner'
-    //               }
-    //             }
-    //           }
-    //         }
+    // stage ("Test") {
+    //   steps {
+    //     container("maven") {
+    //       sh 'mvn test'
+    //     }
+    //   }
+    // }
 
-    //         stage("quality gate"){
-    //           steps {
-    //             script {
-    //               timeout(time: 5, unit: 'MINUTES') {
-    //                 def qG = waitForQualityGate()
-    //                 if (qG.status != 'OK') {
-    //                     error "Pipeline aborted due to quality gate failure: ${qG.status}"
-    //                 }
-    //               }
-    //             } 
-    //           } 
-    //         } 
+    // stage("Sonarqube Analysis "){
+    //   steps {
+    //     withSonarQubeEnv(installationName: "SonarQube-on-Docker") {
+    //       container("sonar-scanner") {
+    //         // uses sonar-project.properties to identify the resources to scan
+    //         sh 'sonar-scanner'
     //       }
     //     }
     //   }
     // }
 
-
-    stage ("Compile") {
-      steps {
-        container("maven") {
-          sh 'mvn clean compile'
-        }
-      }
-    }
-
-    stage ("Test") {
-      steps {
-        container("maven") {
-          sh 'mvn test'
-        }
-      }
-    }
-
-    stage("Sonarqube Analysis "){
-      steps {
-        withSonarQubeEnv(installationName: "SonarQube-on-Docker") {
-          container("sonar-scanner") {
-            // uses sonar-project.properties to identify the resources to scan
-            sh 'sonar-scanner'
-          }
-        }
-      }
-    }
-
-    stage("quality gate"){
-      steps {
-        script {
-          timeout(time: 5, unit: 'MINUTES') {
-            def qG = waitForQualityGate()
-            if (qG.status != 'OK') {
-                error "Pipeline aborted due to quality gate failure: ${qG.status}"
-            }
-          }
-        } 
-      } 
-    } 
+    // stage("quality gate"){
+    //   steps {
+    //     script {
+    //       timeout(time: 5, unit: 'MINUTES') {
+    //         def qG = waitForQualityGate()
+    //         if (qG.status != 'OK') {
+    //             error "Pipeline aborted due to quality gate failure: ${qG.status}"
+    //         }
+    //       }
+    //     } 
+    //   } 
+    // } 
 
   } // End Stages
 

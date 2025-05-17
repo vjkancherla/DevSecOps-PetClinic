@@ -50,7 +50,7 @@ d. generate token and save the token
  b. For the Monorepo-X project, go to Project Settings>Webhooks
  c. Create new Webhook:
  Name: Jenkins-On-Docker
- URL: http://172.18.0.6/sonarqube-webhook/
+ URL: http://172.19.0.6:8080/sonarqube-webhook/
 
 [2] In Jenkins, install SonarQube Scanner Plugin and the Sonar Quality Gate plugin
 
