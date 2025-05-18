@@ -118,7 +118,7 @@ pipeline {
 
       stage("Helm Install Dry Run") {
         steps {
-          withCredentials([file(credentialsId: 'k3d-kube-config', variable: 'KUBECONFIG')]) {
+          withCredentials([file(credentialsId: 'k3d-kubeconfig', variable: 'KUBECONFIG')]) {
             container("kubectl-helm")
             sh '''
               helm upgrade --install petclinic-${GIT_COMMIT_HASH_SHORT} \
@@ -166,7 +166,7 @@ pipeline {
 
     stage("Helm Install Live Run") {
         steps {
-          withCredentials([file(credentialsId: 'k3d-kube-config', variable: 'KUBECONFIG')]) {
+          withCredentials([file(credentialsId: 'k3d-kubeconfig', variable: 'KUBECONFIG')]) {
             container("kubectl-helm")
             // install chart and wait untill all resources are ready
             sh '''
@@ -184,7 +184,7 @@ pipeline {
 
       stage("Verify App") {
         steps {
-          withCredentials([file(credentialsId: 'k3d-kube-config', variable: 'KUBECONFIG')]) {
+          withCredentials([file(credentialsId: 'k3d-kubeconfig', variable: 'KUBECONFIG')]) {
             container("kubectl-helm") {
               // Invoke the test-pod that is part of the helm-chart: helm-chart/templates/tests/post-install-check.yml
               sh 'helm test petclinic-${GIT_COMMIT_HASH_SHORT} -n ci-feature-${GIT_COMMIT_HASH_SHORT}'
