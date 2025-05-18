@@ -4,7 +4,7 @@ metadata:
   name: "{{ .Chart.Name }}-test-connection"
   labels:
     app: {{ .Chart.Name }}
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
   annotations:
     "helm.sh/hook": test
 spec:
