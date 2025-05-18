@@ -14,7 +14,6 @@ pipeline {
 
   environment {
     PROJECT = "PetClinic"
-    REGISTRY_USER = "vjkancherla"
     GIT_COMMIT_HASH = sh (script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
     IMAGE_REPO = "vjkancherla/petclinic"
     IMAGE_TAG = "${GIT_COMMIT_HASH}"
@@ -31,7 +30,7 @@ pipeline {
       }
     }
 
-     stage("Sonarqube Analysis "){
+     stage("Sonarqube analysis"){
         steps {
           withSonarQubeEnv(installationName: "SonarQube-on-Docker") {
             container("sonar-scanner") {
@@ -42,7 +41,7 @@ pipeline {
         }
       }
 
-      stage("quality gate"){
+      stage("Quality gate"){
         steps {
           script {
             timeout(time: 5, unit: 'MINUTES') {
@@ -65,6 +64,41 @@ pipeline {
       //   }
       // }
 
+      
+      stage("Build Image with Kaniko") {
+        steps {
+          container("kaniko") {
+            // Use the "-no-push" option to only build the image and not push it at this stage
+            sh '''
+              /kaniko/executor --context . \
+              --dockerfile Dockerfile \
+              --destination ${IMAGE_REPO}:${IMAGE_TAG} \
+              -no-push \
+              --tarPath ./image.tar
+            '''
+          }
+        }
+      }
+
+      stage("Scan Image with Trivy") {
+        steps {
+          container("trivy") {
+            sh 'trivy image --input image.tar --severity HIGH,CRITICAL --exit-code 1'
+          }
+        }
+      }
+
+      stage("Publish Image with Kaniko") {
+        steps {
+          container("kaniko") {
+            sh '''
+              /kaniko/executor --context . \
+              --dockerfile Dockerfile \
+              --destination ${IMAGE_REPO}:${IMAGE_TAG} \
+            '''
+          }
+        }
+      }
   } // End Stages
 
 } // End pipeline
