@@ -73,7 +73,7 @@ pipeline {
               /kaniko/executor --context . \
               --dockerfile Dockerfile \
               --destination ${IMAGE_REPO}:${IMAGE_TAG} \
-              -no-push \
+              --no-push \
               --tarPath ./image.tar
             '''
           }
