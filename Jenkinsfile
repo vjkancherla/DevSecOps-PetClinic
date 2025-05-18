@@ -99,6 +99,15 @@ pipeline {
           }
         }
       }
+
+      // stage("Scan Helm Chart with Trivy") {
+      //   steps {
+      //     container("trivy") {
+      //       sh 'trivy image --input image.tar --severity HIGH,CRITICAL --exit-code 1'
+      //     }
+      //   }
+      // }
+
   } // End Stages
 
 } // End pipeline
