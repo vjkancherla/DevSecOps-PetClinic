@@ -14,9 +14,10 @@ pipeline {
 
   environment {
     PROJECT = "PetClinic"
-    GIT_COMMIT_HASH = sh (script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
+    GIT_COMMIT_HASH = sh(script: "git log -n 1 --pretty=format:'%H'", returnStdout: true).trim()
+    GIT_COMMIT_HASH_SHORT = "${GIT_COMMIT_HASH.take(8)}" 
     IMAGE_REPO = "vjkancherla/petclinic"
-    IMAGE_TAG = "${GIT_COMMIT_HASH}"
+    IMAGE_TAG = "${GIT_COMMIT_HASH_SHORT}"
   }
 
   stages {
@@ -85,7 +86,7 @@ pipeline {
           container("trivy") {
             // Scan up don't fail if there are CVEs
             //sh 'trivy image --input image.tar --severity HIGH,CRITICAL --exit-code 1'
-            sh 'trivy image --input image.tar > trivy.txt'
+            sh 'trivy image --input image.tar > trivy-image-scan-results.txt'
           }
         }
       }
@@ -102,14 +103,111 @@ pipeline {
         }
       }
 
-      // stage("Scan Helm Chart with Trivy") {
-      //   steps {
-      //     container("trivy") {
-      //       sh 'trivy image --input image.tar --severity HIGH,CRITICAL --exit-code 1'
-      //     }
-      //   }
-      // }
+      stage("Scan Helm Chart with Trivy") {
+        steps {
+          container("trivy") {
+            sh '''
+              trivy conf \
+              --helm-set image.repository=${IMAGE_REPO} \
+              --helm-set image.tage=${IMAGE_TAG} \
+              ./helm-chart > trivy-helm-scan-results.txt
+            '''
+          }
+        }
+      }
+
+      stage("Helm Install Dry Run") {
+        steps {
+          withCredentials([file(credentialsId: 'k3d-kube-config', variable: 'KUBECONFIG')]) {
+            container("kubectl-helm")
+            sh '''
+              helm upgrade --install petclinic-${GIT_COMMIT_HASH_SHORT} \
+                -n ci-feature-${GIT_COMMIT_HASH_SHORT} \
+                --create-namespace \
+                --set image.repository=${IMAGE_REPO} \
+                --set image.tag=${IMAGE_TAG} \
+                --debug --dry-run
+            '''
+          }
+        }
+      }
+
+      stage ('Manual Approval of Release'){
+        steps {
+          script {
+            timeout(time: 10, unit: 'MINUTES') {
+            
+            /*
+            Send an Email to an Approver to approve the DeployGate
+            */
+            // def approvalMailContent = """
+            // Project: ${env.JOB_NAME}
+            // Build Number: ${env.BUILD_NUMBER}
+            // Go to build URL and approve the deployment request.
+            // URL de build: ${env.BUILD_URL}
+            // """
+            // mail(
+            // to: 'postbox.vjk@gmail.com',
+            // subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", 
+            // body: approvalMailContent,
+            // mimeType: 'text/plain'
+            // )
+
+          input(
+              id: "DeployGate",
+              message: "Deploy ${params.project_name}?",
+              submitter: "approver",
+              parameters: [choice(name: 'action', choices: ['Deploy'], description: 'Approve deployment')]
+            )  
+         }
+        }
+      }
+    }
+
+    stage("Helm Install Live Run") {
+        steps {
+          withCredentials([file(credentialsId: 'k3d-kube-config', variable: 'KUBECONFIG')]) {
+            container("kubectl-helm")
+            sh '''
+              helm upgrade --install petclinic-${GIT_COMMIT_HASH_SHORT} \
+                -n ci-feature-${GIT_COMMIT_HASH_SHORT} \
+                --create-namespace \
+                --set image.repository=${IMAGE_REPO} \
+                --set image.tag=${IMAGE_TAG} \
+                --wait \        # Waits for all resources to be ready
+                --timeout 5m    # Max wait time
+            '''
+          }
+        }
+      }
+
+      stage("Verify App") {
+        steps {
+          withCredentials([file(credentialsId: 'k3d-kube-config', variable: 'KUBECONFIG')]) {
+            container("kubectl-helm") {
+              // Invoke the test-pod that is part of the helm-chart: helm-chart/templates/tests/post-install-check.yml
+              sh 'helm test petclinic-${GIT_COMMIT_HASH_SHORT} -n ci-feature-${GIT_COMMIT_HASH_SHORT}'
+
+              // Delete the test-pod
+              sh 'kubectl delete pod petclinic-test-connection -n ci-feature-${GIT_COMMIT_HASH_SHORT} --ignore-not-found=true'
+            }
+          }
+        }
+      }
+      
 
   } // End Stages
+
+  post {
+    always {
+    emailext attachLog: true,
+      subject: "'${currentBuild.result}'",
+      body: "Project: ${env.JOB_NAME}<br/>" +
+          "Build Number: ${env.BUILD_NUMBER}<br/>" +
+          "URL: ${env.BUILD_URL}<br/>",
+      to: 'postbox.vjk@gmail.com',
+      attachmentsPattern: 'trivy-*.txt'
+    }
+  }
 
 } // End pipeline
