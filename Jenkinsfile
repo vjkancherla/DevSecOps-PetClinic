@@ -168,14 +168,15 @@ pipeline {
         steps {
           withCredentials([file(credentialsId: 'k3d-kube-config', variable: 'KUBECONFIG')]) {
             container("kubectl-helm")
+            // install chart and wait untill all resources are ready
             sh '''
               helm upgrade --install petclinic-${GIT_COMMIT_HASH_SHORT} \
                 -n ci-feature-${GIT_COMMIT_HASH_SHORT} \
                 --create-namespace \
                 --set image.repository=${IMAGE_REPO} \
                 --set image.tag=${IMAGE_TAG} \
-                --wait \        # Waits for all resources to be ready
-                --timeout 5m    # Max wait time
+                --wait \
+                --timeout 5m 
             '''
           }
         }
