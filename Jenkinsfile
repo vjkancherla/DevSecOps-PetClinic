@@ -22,67 +22,48 @@ pipeline {
 
   stages {
 
-    stage("OWASP Dependency Check") {
-              steps {
-                // see jenkins-owasp-dependency-check.md for setting up OWASP plugin
-                dependencyCheck additionalArguments: '--scan ./ --format HTML --prettyPrint', odcInstallation: 'OWASP-DP-Check'
-                dependencyCheckPublisher pattern: '**/dependency-check-report.html'
+    stage ("Mvn compile, test and package") {
+      steps {
+        container("maven") {
+          // You don't need to explicitly run compile or test before package because Maven handles it.
+          sh 'mvn clean package'
+        }
+      }
+    }
+
+     stage("Sonarqube Analysis "){
+        steps {
+          withSonarQubeEnv(installationName: "SonarQube-on-Docker") {
+            container("sonar-scanner") {
+              // uses sonar-project.properties to identify the resources to scan
+              sh 'sonar-scanner'
+            }
+          }
+        }
+      }
+
+      stage("quality gate"){
+        steps {
+          script {
+            timeout(time: 5, unit: 'MINUTES') {
+              def qG = waitForQualityGate()
+              if (qG.status != 'OK') {
+                  error "Pipeline aborted due to quality gate failure: ${qG.status}"
               }
             }
+          } 
+        } 
+      } 
 
-    // stage ("Mvn compile, test and package") {
-    //   steps {
-    //     container("maven") {
-    //       // You don't need to explicitly run compile or test before package because Maven handles it.
-    //       sh 'mvn clean package'
-    //     }
-    //   }
-    // }
-
-    // stage ("Parallel Execution: Static Code Analysis") {
-    //   parallel {
-    //     stage('SCA with SonaqQube') {
-    //       stages {
-    //         stage("Sonarqube Analysis "){
-    //           steps {
-    //             withSonarQubeEnv(installationName: "SonarQube-on-Docker") {
-    //               container("sonar-scanner") {
-    //                 // uses sonar-project.properties to identify the resources to scan
-    //                 sh 'sonar-scanner'
-    //               }
-    //             }
-    //           }
-    //         }
-
-    //         stage("quality gate"){
-    //           steps {
-    //             script {
-    //               timeout(time: 5, unit: 'MINUTES') {
-    //                 def qG = waitForQualityGate()
-    //                 if (qG.status != 'OK') {
-    //                     error "Pipeline aborted due to quality gate failure: ${qG.status}"
-    //                 }
-    //               }
-    //             } 
-    //           } 
-    //         } 
-    //       }
-    //     }
-        
-    //     stage('OWASP analysis') {
-    //       stages {
-    //         stage("OWASP Dependency Check") {
-    //           steps {
-    //             // see jenkins-owasp-dependency-check.md for setting up OWASP plugin
-    //             dependencyCheck additionalArguments: '--scan ./ --format HTML --prettyPrint', odcInstallation: 'OWASP-DP-Check'
-    //             dependencyCheckPublisher pattern: '**/dependency-check-report.html'
-    //           }
-    //         }
-    //       }
-    //     }
-
-    //   }
-    // }
+      // This stage triggers fine, but takes super long due to downloading of the vulnerability DB each time.
+      // Disabling it for now.
+      // stage("OWASP Dependency Check") {
+      //   steps {
+      //     // see jenkins-owasp-dependency-check.md for setting up OWASP
+      //     dependencyCheck additionalArguments: '--scan ./ --format HTML --prettyPrint', odcInstallation: 'OWASP-DP-Check'
+      //     dependencyCheckPublisher pattern: '**/dependency-check-report.html'
+      //   }
+      // }
 
   } // End Stages
 
