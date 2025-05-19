@@ -119,15 +119,16 @@ pipeline {
       stage("Helm Install Dry Run") {
         steps {
           withCredentials([file(credentialsId: 'k3d-kubeconfig', variable: 'KUBECONFIG')]) {
-            container("kubectl-helm")
-            sh '''
-              helm upgrade --install petclinic-${GIT_COMMIT_HASH_SHORT} \
-                -n ci-feature-${GIT_COMMIT_HASH_SHORT} \
-                --create-namespace \
-                --set image.repository=${IMAGE_REPO} \
-                --set image.tag=${IMAGE_TAG} \
-                --debug --dry-run
-            '''
+            container("kubectl-helm") {
+              sh '''
+                helm upgrade --install petclinic-${GIT_COMMIT_HASH_SHORT} \
+                  -n ci-feature-${GIT_COMMIT_HASH_SHORT} \
+                  --create-namespace \
+                  --set image.repository=${IMAGE_REPO} \
+                  --set image.tag=${IMAGE_TAG} \
+                  --debug --dry-run
+              '''
+            }
           }
         }
       }
@@ -167,17 +168,18 @@ pipeline {
     stage("Helm Install Live Run") {
         steps {
           withCredentials([file(credentialsId: 'k3d-kubeconfig', variable: 'KUBECONFIG')]) {
-            container("kubectl-helm")
-            // install chart and wait untill all resources are ready
-            sh '''
-              helm upgrade --install petclinic-${GIT_COMMIT_HASH_SHORT} \
-                -n ci-feature-${GIT_COMMIT_HASH_SHORT} \
-                --create-namespace \
-                --set image.repository=${IMAGE_REPO} \
-                --set image.tag=${IMAGE_TAG} \
-                --wait \
-                --timeout 5m 
-            '''
+            container("kubectl-helm") {
+              // install chart and wait untill all resources are ready
+              sh '''
+                helm upgrade --install petclinic-${GIT_COMMIT_HASH_SHORT} \
+                  -n ci-feature-${GIT_COMMIT_HASH_SHORT} \
+                  --create-namespace \
+                  --set image.repository=${IMAGE_REPO} \
+                  --set image.tag=${IMAGE_TAG} \
+                  --wait \
+                  --timeout 5m 
+              '''
+            }
           }
         }
       }
@@ -195,6 +197,20 @@ pipeline {
           }
         }
       }
+
+      stage("Teardown App") {
+        steps {
+          withCredentials([file(credentialsId: 'k3d-kubeconfig', variable: 'KUBECONFIG')]) {
+            container("kubectl-helm") {
+              // Invoke the test-pod that is part of the helm-chart: helm-chart/templates/tests/post-install-check.yml
+              sh 'helm uninstall petclinic-${GIT_COMMIT_HASH_SHORT} -n ci-feature-${GIT_COMMIT_HASH_SHORT}'
+
+              sh 'kubectl delete ns ci-feature-${GIT_COMMIT_HASH_SHORT}'
+            }
+          }
+        }
+      }
+
   } // End Stages
 
   post {
