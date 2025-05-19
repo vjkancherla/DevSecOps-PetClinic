@@ -107,8 +107,7 @@ pipeline {
         steps {
           container("trivy") {
             sh '''
-              trivy conf \
-              --security-checks config \
+              trivy config \
               --helm-set image.repository=${IMAGE_REPO} \
               --helm-set image.tag=${IMAGE_TAG} \
               ./helm-chart > trivy-helm-scan-results.txt
@@ -200,16 +199,20 @@ pipeline {
 
   } // End Stages
 
-  // post {
-  //   always {
-  //   emailext attachLog: true,
-  //     subject: "'${currentBuild.result}'",
-  //     body: "Project: ${env.JOB_NAME}<br/>" +
-  //         "Build Number: ${env.BUILD_NUMBER}<br/>" +
-  //         "URL: ${env.BUILD_URL}<br/>",
-  //     to: 'postbox.vjk@gmail.com',
-  //     attachmentsPattern: 'trivy-*.txt'
-  //   }
-  // }
+  post {
+    always {
+    // Archive raw scan reports for download
+    archiveArtifacts artifacts: 'trivy-*.txt', allowEmptyArchive: true
+    
+    // Optionally, Email the scan reports
+    // emailext attachLog: true,
+    //   subject: "'${currentBuild.result}'",
+    //   body: "Project: ${env.JOB_NAME}<br/>" +
+    //       "Build Number: ${env.BUILD_NUMBER}<br/>" +
+    //       "URL: ${env.BUILD_URL}<br/>",
+    //   to: 'postbox.vjk@gmail.com',
+    //   attachmentsPattern: 'trivy-*.txt'
+    // }
+  }
 
 } // End pipeline
