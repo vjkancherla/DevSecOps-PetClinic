@@ -126,7 +126,8 @@ pipeline {
                   --create-namespace \
                   --set image.repository=${IMAGE_REPO} \
                   --set image.tag=${IMAGE_TAG} \
-                  --debug --dry-run
+                  --debug --dry-run \
+                  ./helm-chart
               '''
             }
           }
@@ -177,7 +178,8 @@ pipeline {
                   --set image.repository=${IMAGE_REPO} \
                   --set image.tag=${IMAGE_TAG} \
                   --wait \
-                  --timeout 5m 
+                  --timeout 5m \
+                  ./helm-chart
               '''
             }
           }
