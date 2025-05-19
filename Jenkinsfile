@@ -193,6 +193,9 @@ pipeline {
               // Invoke the test-pod that is part of the helm-chart: helm-chart/templates/tests/post-install-check.yml
               sh 'helm test petclinic-${GIT_COMMIT_HASH_SHORT} -n ci-feature-${GIT_COMMIT_HASH_SHORT}'
 
+              // Get the logs
+              sh 'kubectl logs etclinic-test-connection -n ci-feature-${GIT_COMMIT_HASH_SHORT}'
+
               // Delete the test-pod
               sh 'kubectl delete pod petclinic-test-connection -n ci-feature-${GIT_COMMIT_HASH_SHORT} --ignore-not-found=true'
             }
