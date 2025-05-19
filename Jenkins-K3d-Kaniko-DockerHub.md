@@ -24,6 +24,24 @@ kubectl create secret -n jenkins docker-registry docker-credentials \
 
 This secret will be mounted to the Kaniko container for authentication.
 
+
+## Testing an image build with Kaniko
+```
+>> kubectl apply -f kaniko-testing-pod.yml
+
+>> k exec -it -n jenkins pod/my-custom-jenkins-agent -- sh
+
+>> vi Dockerfile
+FROM alpine
+CMD echo "Hello from test container
+
+>> /kaniko/executor --context . \
+--dockerfile Dockerfile \
+--destination vjkancher/my-kaniko-test:v1 \
+
+```
+
+
 ## Jenkins Agent Pod Example
 ```
 apiVersion: v1
@@ -104,3 +122,5 @@ spec:
       - key: .dockerconfigjson
         path: config.json
 ```
+
+

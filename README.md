@@ -1,5 +1,72 @@
-# Spring PetClinic Sample Application  
-# Modified By AJAY KUAMR YEGIREDDI  https://www.youtube.com/@mr.cloudbook
+# Spring PetClinic Sample Application With DevSecops Pipeline
+
+## Original Source
+I have adapted the project from the original: <br> 
+https://github.com/Aj7Ay/Petclinic-Real <br>
+https://www.youtube.com/watch?v=XUw7pR026co
+
+
+## My, modified, Architecture
+1. Jenkins (bitnami/jenkins:2.504.1) running on Docker. 
+2. Jenkins Agents on Kuberntetes (which is running on K3d, which in-turn is running on Docker). <br>
+   The pod template used for Jenkins Agents is - jenkins-agent-pod-template.yml
+3. Kaniko for building docker images on Kubernetes
+3. Sonarqube on Docker
+4. OWASP dependency check plugin
+5. Helm chart for installing and testing the app
+
+### Setup Guides
+- [Jenkins-on-Docker with K8sAgents-On-K3d](JenkinsOnDocker-K8sAgentsOnK3D.md)
+- [Kaniko + DockerHub](Jenkins-K3d-Kaniko-DockerHub.md)
+- [SonarQube Setup](sonarqube-on-docker.md)
+- [OWASP Integration](jenkins-owasp-dependency-check.md)
+
+## Jenkins Workflow
+- Code-Commited to a feature-branch in gitHub - eg: feature/jira-0000-setup-project
+- Manually trigger Jenkins pipeline
+- Workflow: 
+    - code checkout
+    - Mvn compile, test and package 
+    - sonarqube code analysis 
+    - owasp code analysis
+    - build image with Kaniko 
+    - scan image with Trivy 
+    - publish image to docker-hub, with Kaniko 
+    - scan helm-chart with Trivy
+    - helm-chart dry-run 
+    - manual approval-gate for deployment
+    - helm-chart live-run 
+    - verify app 
+    - delete app and namespace 
+    - publish trivy scan reports
+
+
+## Running petclinic locally
+
+### Build with Maven command line
+```
+git clone https://github.com/vjkancherla/DevSecOps-PetClinic.git
+cd DevSecOps-PetClinic
+./mvn clean package
+```
+
+### Create Docker image
+```
+docker build -t vjkancherla/petclinic:v1 .
+```
+
+### With Docker
+```
+docker run -p 9080:8080 vjkancherla/petclinic:v1
+```
+
+You can then access petclinic here: [http://localhost:8080/petclinic](http://localhost:9080/petclinic)
+
+<br>
+<br>
+
+# ORIGINAL README 
+# Modified By AJAY KUMAR YEGIREDDI  https://www.youtube.com/@mr.cloudbook
 
 <div align="center"> <img src="https://raw.githubusercontent.com/Aj7Ay/Petclinic-Real/main/Ajay1.png"> </div>
 [![Java CI with Maven](https://github.com/spring-petclinic/spring-framework-petclinic/actions/workflows/maven-build.yml/badge.svg)](https://github.com/spring-petclinic/spring-framework-petclinic/actions/workflows/maven-build.yml)

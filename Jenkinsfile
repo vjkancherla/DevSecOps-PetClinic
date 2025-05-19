@@ -194,7 +194,7 @@ pipeline {
               sh 'helm test petclinic-${GIT_COMMIT_HASH_SHORT} -n ci-feature-${GIT_COMMIT_HASH_SHORT}'
 
               // Get the logs
-              sh 'kubectl logs etclinic-test-connection -n ci-feature-${GIT_COMMIT_HASH_SHORT}'
+              sh 'kubectl logs petclinic-test-connection -n ci-feature-${GIT_COMMIT_HASH_SHORT}'
 
               // Delete the test-pod
               sh 'kubectl delete pod petclinic-test-connection -n ci-feature-${GIT_COMMIT_HASH_SHORT} --ignore-not-found=true'

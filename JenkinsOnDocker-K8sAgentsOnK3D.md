@@ -105,6 +105,11 @@ docker run -d --name jenkins-docker \
   bitnami/jenkins:2.504.1
 ```
 
+Login to Jenkins:
+URL: localhost:8080
+username: user
+password: bitnami
+
 ## Jenkins Configuration <a name="jenkins-configuration"></a>
 
 ### 10.0 Install Plugins
