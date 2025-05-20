@@ -102,12 +102,37 @@ docker run -d --name jenkins-docker \
   --network=k3d-mycluster \
   --ip 172.19.0.6 \
   -e TZ=Europe/London \
-  vjkancherla/my-jenkins:v2
+  bitnami/jenkins:2.504.1
 ```
+
+Login to Jenkins:
+URL: localhost:8080
+username: user
+password: bitnami
 
 ## Jenkins Configuration <a name="jenkins-configuration"></a>
 
-### 10. Add Credentials (Web UI)
+### 10.0 Install Plugins
+The bitnami/jenkins:2.504.1 image is lightweight. We need to install the following plugins:
+```
+build-timeout:1.38
+git-client:6.1.3
+git:5.7.0
+github:1.43.0
+kubernetes-client-api:6.10.0-251.v556f5f100500
+kubernetes-credentials:192.v4d5b_1c429d17
+kubernetes:4340.v345364d31a_2a_
+pipeline-build-step:567.vea_ce550ece97
+pipeline-input-step:517.vf8e782ee645c
+sonar-quality-gates:352.vdcdb_d7994fb_6
+sonar:2.18
+workflow-multibranch:806.vb_b_688f609ee9
+workflow-scm-step:437.v05a_f66b_e5ef8
+workflow-support:968.v8f17397e87b_8
+ws-cleanup:0.48
+```
+
+### 10.1 Add Credentials (Web UI)
 #### A. Accessing Credentials Section
 1. Open Jenkins in your browser: `http://localhost:8080` (or your configured host/IP)
 2. Log in with your admin credentials

@@ -13,15 +13,10 @@ spec:
     volumeMounts:
     - name: kaniko-secret
       mountPath: /kaniko/.docker/
-  - name: k8s
-    image: alpine/k8s:1.24.15
-    command:
-    - cat
-    tty: true
   volumes:
   - name: kaniko-secret
     secret:
-      secretName: regcred
+      secretName: docker-credentials
       items:
       - key: .dockerconfigjson
         path: config.json
