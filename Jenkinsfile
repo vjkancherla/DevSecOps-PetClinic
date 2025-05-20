@@ -86,7 +86,7 @@ pipeline {
           container("trivy") {
             // Scan up don't fail if there are CVEs
             //sh 'trivy image --input image.tar --severity HIGH,CRITICAL --exit-code 1'
-            sh 'trivy image --input image.tar > trivy-image-scan-results.txt'
+            sh 'trivy image --input image.tar > trivy-image-scan-${env.BUILD_NUMBER}-results.txt'
           }
         }
       }
@@ -110,7 +110,7 @@ pipeline {
               trivy config \
               --helm-set image.repository=${IMAGE_REPO} \
               --helm-set image.tag=${IMAGE_TAG} \
-              ./helm-chart > trivy-helm-scan-results.txt
+              ./helm-chart > trivy-helm-scan-${env.BUILD_NUMBER}-results.txt
             '''
           }
         }

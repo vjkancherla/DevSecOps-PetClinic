@@ -11,5 +11,5 @@ spec:
   containers:
     - name: curl
       image: curlimages/curl
-      command: ['curl', '-sSf', 'http://{{ .Chart.Name }}:{{ .Values.service.port }}/petclinic']
+      command: ['curl', '-sSfL', 'http://{{ .Chart.Name }}:{{ .Values.service.port }}/petclinic']
   restartPolicy: Never
