@@ -66,6 +66,15 @@ spec:
       - name: workspace-volume
         mountPath: /home/jenkins/agent
 
+  - name: gitleaks
+    image: ghcr.io/gitleaks/gitleaks:v8.26.0
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+      - name: workspace-volume
+        mountPath: /home/jenkins/agent
+
   volumes:
   - name: workspace-volume
     emptyDir: {}
