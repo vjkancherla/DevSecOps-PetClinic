@@ -116,19 +116,24 @@ password: bitnami
 The bitnami/jenkins:2.504.1 image is lightweight. We need to install the following plugins:
 ```
 build-timeout:1.38
+build-timestamp
 git-client:6.1.3
 git:5.7.0
 github:1.43.0
 kubernetes-client-api:6.10.0-251.v556f5f100500
 kubernetes-credentials:192.v4d5b_1c429d17
 kubernetes:4340.v345364d31a_2a_
+pipeine:608.v67378e9d3db_1
+Pipeline: SCM Step:437.v05a_f66b_e5ef8
+Pipeline: Job:1520.v56d65e3b_4566
+Pipeline: Basic Steps:1079.vce64b_a_929c5a_
+Pipeline: Stage Step:322.vecffa_99f371c
+Pipeline: Multibranch:806.vb_b_688f609ee9
 pipeline-build-step:567.vea_ce550ece97
 pipeline-input-step:517.vf8e782ee645c
+Pipeline: Declarative:2.2255.v56a_15e805f12
+OWASP Dependency-Check:5.6.1
 sonar-quality-gates:352.vdcdb_d7994fb_6
-sonar:2.18
-workflow-multibranch:806.vb_b_688f609ee9
-workflow-scm-step:437.v05a_f66b_e5ef8
-workflow-support:968.v8f17397e87b_8
 ws-cleanup:0.48
 ```
 
@@ -196,7 +201,7 @@ Fill in these fields carefully:
 1. **Name**: k3d-mycluster
 2. **Kubernetes URL**: Leave empty
 3. **Disable HTTPS certificate check**: ✔ Enabled
-4. **Credentials**: Select your stored `k8s-jenkins-sa-token` credential
+4. **Credentials**: Select your stored `3d-kubeconfig` credential
 5. Click "Test Connectivity" to verify connectivity
 6. **Jenkins URL**: `http://<THE-MACBOOK-IPAddress>:8080` (http://192.168.1.152:8080)
 7. **Jenkins tunnel**: `<THE-MACBOOK-IPAddress>:50000`  (192.168.1.152:50000)

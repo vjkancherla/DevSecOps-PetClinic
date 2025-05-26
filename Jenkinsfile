@@ -55,6 +55,15 @@ pipeline {
         } 
       } 
 
+      stage("Secrets scanning"){
+        steps {
+          container("gitleaks") {
+            // Ensure no secrets are stored in source code
+            sh 'gitleaks dir ./ --report-path "gitleaks-report.json" --report-format json'
+          }
+        }
+      }
+
       // This stage triggers fine, but takes super long due to downloading of the vulnerability DB each time.
       // Disabling it for now.
       // stage("OWASP Dependency Check") {
@@ -222,6 +231,9 @@ pipeline {
     always {
     // Archive raw scan reports for download
     archiveArtifacts artifacts: 'trivy-*.txt', allowEmptyArchive: true
+
+    // Archive gitleaks scans report
+    archiveArtifacts artifacts: 'gitleaks-report.json', allowEmptyArchive: true
     
     // Optionally, Email the scan reports
     // emailext attachLog: true,
