@@ -1,0 +1,56 @@
+services:
+  jenkins:
+    image: bitnami/jenkins:2.504.1
+    container_name: jenkins-docker
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins-data:/bitnami/jenkins/home
+    environment:
+      - TZ=Europe/London
+    networks:
+      mycluster:
+        ipv4_address: 172.19.0.6
+    restart: unless-stopped
+
+  sonarqube:
+    image: sonarqube:9.9.8-community
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+      - "9092:9092"
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+    environment:
+      - TZ=Europe/London
+    networks:
+      mycluster:
+        ipv4_address: 172.19.0.7
+    restart: unless-stopped
+
+# Using Volumes instead of bind-mounts due to slow performace
+volumes:
+  jenkins-data:
+    driver: local
+    name: jenkins-data
+    labels:
+      - "purpose=jenkins-production"
+      - "backup=required"
+      - "project=ci-cd"
+      - "environment=local-dev"
+      - "created-by=docker-compose"
+  sonarqube-data:
+    driver: local
+    name: sonarqube-data
+    labels:
+      - "purpose=sonarqube-production"
+      - "backup=required"
+      - "project=code-quality"
+      - "environment=local-dev"
+      - "created-by=docker-compose"
+
+networks:
+  mycluster:
+    external: true
+    name: k3d-mycluster

@@ -1,5 +1,9 @@
 # Spring PetClinic Sample Application With DevSecops Pipeline
 
+## See this document for step-by-step guide to set everything up to run this project locally: 
+- [START-HERE](START-HERE.md)
+
+
 ## Original Source
 I have adapted the project from the original: <br> 
 https://github.com/Aj7Ay/Petclinic-Real <br>
@@ -12,14 +16,12 @@ https://www.youtube.com/watch?v=XUw7pR026co
    The pod template used for Jenkins Agents is - jenkins-agent-pod-template.yml
 3. Kaniko for building docker images on Kubernetes
 3. Sonarqube on Docker
-4. OWASP dependency check plugin
-5. Helm chart for installing and testing the app
+4. Helm chart for installing and testing the app
 
 ### Setup Guides
-- [Jenkins-on-Docker with K8sAgents-On-K3d](JenkinsOnDocker-K8sAgentsOnK3D.md)
-- [Kaniko + DockerHub](Jenkins-K3d-Kaniko-DockerHub.md)
-- [SonarQube Setup](sonarqube-on-docker.md)
-- [OWASP Integration](jenkins-owasp-dependency-check.md)
+- [Jenkins-on-Docker with K8sAgents-On-K3d](01-JenkinsOnDocker-K8sAgentsOnK3D.md)
+- [Kaniko + DockerHub](03-Jenkins-K3d-Kaniko-DockerHub.md)
+- [SonarQube Setup](02-sonarqube-on-docker.md)
 
 ## Jenkins Workflow
 - Code-Commited to a feature-branch in gitHub - eg: feature/jira-0000-setup-project
@@ -28,6 +30,7 @@ https://www.youtube.com/watch?v=XUw7pR026co
     - code checkout
     - Mvn compile, test and package 
     - sonarqube code analysis 
+    - gitsecrete: scan code for harcoded secrets
     - owasp code analysis
     - build image with Kaniko 
     - scan image with Trivy 
@@ -38,7 +41,7 @@ https://www.youtube.com/watch?v=XUw7pR026co
     - helm-chart live-run 
     - verify app 
     - delete app and namespace 
-    - publish trivy scan reports
+    - publish trivy, gitsecrets and owasp scan reports
 
 
 ## Running petclinic locally
