@@ -1,7 +1,7 @@
 # Spring PetClinic Sample Application With DevSecops Pipeline
 
 ## See this document for step-by-step guide to set everything up to run this project locally: 
-- [START-HERE](START-HERE.md)
+- [START-HERE](00-START-HERE.md)
 
 
 ## Original Source
