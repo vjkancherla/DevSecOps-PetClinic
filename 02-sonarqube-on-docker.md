@@ -21,7 +21,7 @@ sonarqube:9.9.8-community
 [3] Change password to "user". Login now is - admin/user
 
 
-[4] To analyse Golang code, we need a tool called SonarScanner. This tool is installed on the Jenkins server.
+[4] [NOT-REQUIRED] To analyse Golang code, we need a tool called SonarScanner. This tool is installed on the Jenkins server.
 SonarScanner is a command-line tool used to analyze projects and send the results to the SonarQube server
 
 
@@ -64,6 +64,7 @@ d. generate token and save the token
 [4.1] Go to "Manage Jenkins" > "Configure System".
 Now, you should see the "SonarQube Servers" section.
 Click on "Add SonarQube" to add a SonarQube server configuration.
+Select "Environment variables"
 Provide a name for the server - "SonarQube-on-Docker"
 Enter the URL of your SonarQube server (e.g., http://localhost:9000). Set it to - http://172.20.0.7:9000
 Server authentication token: Select the credential created in step-2

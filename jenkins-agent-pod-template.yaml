@@ -4,6 +4,25 @@ metadata:
   name: jenkins-agent
   namespace: jenkins
 spec:
+  nodeSelector:
+    # Ensure pods run on agent node where volumes (see k3d-volumes.md) are mounted
+    kubernetes.io/hostname: k3d-mycluster-agent-0
+
+  initContainers:
+  - name: fix-owasp-permissions
+    image: busybox:1.36-musl 
+    command: ["sh", "-c", "mkdir -p /usr/share/dependency-check/data && chown -R 1000:1000 /usr/share/dependency-check/data"]
+    volumeMounts:
+      - name: owasp-cache
+        mountPath: /usr/share/dependency-check/data
+  
+  - name: fix-trivy-permissions
+    image: busybox:1.36-musl 
+    command: ["sh", "-c", "mkdir -p /root/.cache/trivy && chown -R 1000:1000 /root/.cache/trivy"]
+    volumeMounts:
+      - name: trivy-cache
+        mountPath: /root/.cache/trivy
+
   containers:
   - name: jnlp
     image: jenkins/inbound-agent:latest
@@ -33,6 +52,8 @@ spec:
     volumeMounts:
       - name: kaniko-secret
         mountPath: /kaniko/.docker
+      - name: kaniko-cache
+        mountPath: /cache
       - name: workspace-volume
         mountPath: /home/jenkins/agent
 
@@ -62,7 +83,12 @@ spec:
     command:
     - cat
     tty: true
+    env:
+    - name: TRIVY_CACHE_DIR
+      value: /root/.cache/trivy
     volumeMounts:
+      - name: trivy-cache
+        mountPath: /root/.cache/trivy
       - name: workspace-volume
         mountPath: /home/jenkins/agent
 
@@ -75,11 +101,32 @@ spec:
       - name: workspace-volume
         mountPath: /home/jenkins/agent
 
+  - name: owasp-dependency-check
+    image: owasp/dependency-check:latest
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+      - name: owasp-cache
+        mountPath: /usr/share/dependency-check/data
+      - name: workspace-volume
+        mountPath: /home/jenkins/agent
+
   volumes:
   - name: workspace-volume
     emptyDir: {}
   - name: maven-cache
-    emptyDir: {}
+    persistentVolumeClaim:
+      claimName: jenkins-maven-cache-pvc
+  - name: kaniko-cache
+    persistentVolumeClaim:
+      claimName: jenkins-kaniko-cache-pvc
+  - name: owasp-cache
+    persistentVolumeClaim:
+      claimName: jenkins-owasp-cache-pvc
+  - name: trivy-cache
+    persistentVolumeClaim:
+      claimName: jenkins-trivy-cache-pvc
   - name: kaniko-secret
     secret:
       secretName: docker-credentials

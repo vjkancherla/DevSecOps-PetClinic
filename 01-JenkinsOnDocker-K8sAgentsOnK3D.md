@@ -201,7 +201,7 @@ Fill in these fields carefully:
 1. **Name**: k3d-mycluster
 2. **Kubernetes URL**: Leave empty
 3. **Disable HTTPS certificate check**: ✔ Enabled
-4. **Credentials**: Select your stored `3d-kubeconfig` credential
+4. **Credentials**: Select your stored `k3d-kubeconfig` credential
 5. Click "Test Connectivity" to verify connectivity
 6. **Jenkins URL**: `http://<THE-MACBOOK-IPAddress>:8080` (http://192.168.1.152:8080)
 7. **Jenkins tunnel**: `<THE-MACBOOK-IPAddress>:50000`  (192.168.1.152:50000)
