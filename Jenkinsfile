@@ -12,6 +12,7 @@ pipeline {
     booleanParam(name: 'RUN_OWASP_SCAN', defaultValue: false, description: 'Run OWASP Dependency Check (resource intensive)')
     booleanParam(name: 'RUN_IMAGE_BUILD', defaultValue: true, description: 'Build and scan container image')
     booleanParam(name: 'RUN_HELM_OPERATIONS', defaultValue: true, description: 'Run Helm chart operations')
+    booleanParam(name: 'RUN_CHART_PUBLISH', defaultValue: true, description: 'Package and publish Helm chart to Docker Hub')
     booleanParam(name: 'RUN_DEPLOYMENT', defaultValue: true, description: 'Run full deployment (including manual approval)')
   }
 
@@ -26,6 +27,20 @@ pipeline {
     GIT_COMMIT_HASH_SHORT = "${GIT_COMMIT_HASH.take(8)}" 
     IMAGE_REPO = "vjkancherla/petclinic"
     IMAGE_TAG = "${GIT_COMMIT_HASH_SHORT}"
+    
+    // Docker Hub settings for Helm charts
+    DOCKERHUB_ORG = "vjkancherla"
+    CHART_NAME = "petclinic"
+    DOCKER_REGISTRY = "registry-1.docker.io"
+    
+    // Generate semantic version from git tag or use commit-based version
+    CHART_VERSION = sh(script: """
+      if git describe --tags --exact-match HEAD 2>/dev/null; then
+        git describe --tags --exact-match HEAD | sed 's/^v//'
+      else 
+        echo "0.1.${BUILD_NUMBER}+git.${GIT_COMMIT_HASH_SHORT}"
+      fi
+    """, returnStdout: true).trim()
   }
 
   stages {
@@ -128,7 +143,12 @@ pipeline {
     }
 
     stage("Scan Image with Trivy") {
-      when { expression { params.RUN_IMAGE_BUILD } }
+       when { 
+        allOf {
+          expression { params.RUN_SECURITY_SCANS }
+          expression { params.RUN_IMAGE_BUILD }
+        }
+      }
       steps {
         container("trivy") {
           sh 'trivy image --input image.tar > trivy-image-scan-results.txt'
@@ -150,7 +170,12 @@ pipeline {
     }
 
     stage("Scan Helm Chart with Trivy") {
-      when { expression { params.RUN_HELM_OPERATIONS } }
+      when { 
+        allOf {
+          expression { params.RUN_SECURITY_SCANS }
+          expression { params.RUN_HELM_OPERATIONS }
+        }
+      }
       steps {
         container("trivy") {
           sh '''
@@ -159,6 +184,51 @@ pipeline {
             --helm-set image.tag=${IMAGE_TAG} \
             ./helm-chart > trivy-helm-scan-results.txt
           '''
+        }
+      }
+    }
+
+    stage("Package and Publish Helm Chart") {
+      when { 
+        allOf {
+          expression { params.RUN_HELM_OPERATIONS }
+          expression { params.RUN_CHART_PUBLISH }
+        }
+      }
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_TOKEN')]) {
+          container("kubectl-helm") {
+            sh '''
+              echo "Packaging Helm chart with version: ${CHART_VERSION}"
+              echo "Using image: ${IMAGE_REPO}:${IMAGE_TAG}"
+              
+              # Update chart version and app version in Chart.yaml
+              sed -i "s/^version:.*/version: ${CHART_VERSION}/" ./helm-chart/Chart.yaml
+              sed -i "s/^appVersion:.*/appVersion: \"${IMAGE_TAG}\"/" ./helm-chart/Chart.yaml
+              
+              # Update default image in values.yaml to point to the newly built image
+              sed -i "s|repository:.*|repository: ${IMAGE_REPO}|" ./helm-chart/values.yaml
+              sed -i "s/tag:.*/tag: \"${IMAGE_TAG}\"/" ./helm-chart/values.yaml
+              
+              # Verify the changes
+              echo "=== Updated Chart.yaml ==="
+              cat ./helm-chart/Chart.yaml
+              echo "=== Updated values.yaml ==="
+              cat ./helm-chart/values.yaml
+              
+              # Package the Helm chart
+              helm package ./helm-chart --version ${CHART_VERSION} --app-version ${IMAGE_TAG}
+              
+              # Login to Docker Hub registry for Helm
+              echo "${DOCKERHUB_TOKEN}" | helm registry login ${DOCKER_REGISTRY} -u ${DOCKERHUB_USER} --password-stdin
+              
+              # Push chart to Docker Hub OCI registry
+              helm push ${CHART_NAME}-${CHART_VERSION}.tgz oci://${DOCKER_REGISTRY}/${DOCKERHUB_ORG}
+              
+              echo "Successfully published Helm chart to oci://${DOCKER_REGISTRY}/${DOCKERHUB_ORG}/${CHART_NAME}:${CHART_VERSION}"
+              echo "Chart contains image: ${IMAGE_REPO}:${IMAGE_TAG}"
+            '''
+          }
         }
       }
     }
@@ -260,6 +330,11 @@ pipeline {
         // Archive OWASP Dependency Check report only if OWASP scan is enabled
         if (params.RUN_OWASP_SCAN) {
           archiveArtifacts artifacts: 'dependency-check-report*', allowEmptyArchive: true
+        }
+        
+        // Archive packaged Helm charts if chart publishing is enabled
+        if (params.RUN_CHART_PUBLISH) {
+          archiveArtifacts artifacts: '*.tgz', allowEmptyArchive: true
         }
       }
     }

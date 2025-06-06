@@ -1,3 +1,13 @@
+# Credentials and sensitive files
+.env.credentials
+*.credentials
+.env.local
+.env.*.local
+
+# Docker compose override files
+docker-compose.override.yml
+docker-compose.override.yaml
+
 # Compiled class files
 *.class
 

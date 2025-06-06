@@ -14,20 +14,20 @@ services:
         ipv4_address: 172.19.0.6
     restart: unless-stopped
 
-  sonarqube:
-    image: sonarqube:9.9.8-community
-    container_name: sonarqube
-    ports:
-      - "9000:9000"
-      - "9092:9092"
-    volumes:
-      - sonarqube-data:/opt/sonarqube/data
-    environment:
-      - TZ=Europe/London
-    networks:
-      mycluster:
-        ipv4_address: 172.19.0.7
-    restart: unless-stopped
+  # sonarqube:
+  #   image: sonarqube:9.9.8-community
+  #   container_name: sonarqube
+  #   ports:
+  #     - "9000:9000"
+  #     - "9092:9092"
+  #   volumes:
+  #     - sonarqube-data:/opt/sonarqube/data
+  #   environment:
+  #     - TZ=Europe/London
+  #   networks:
+  #     mycluster:
+  #       ipv4_address: 172.19.0.7
+  #   restart: unless-stopped
 
 # Using Volumes instead of bind-mounts due to slow performace
 volumes:

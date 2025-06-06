@@ -2,8 +2,9 @@
 replicaCount: 1
 
 image:
-  repository: springcommunity/spring-framework-petclinic  # Default image name
-  tag: latest                                             # Default image tag
+  # These will be dynamically updated by CI pipeline
+  repository: vjkancherla/petclinic  # Updated to match your IMAGE_REPO
+  tag: latest                        # Will be replaced with commit hash
   pullPolicy: IfNotPresent
 
 service:

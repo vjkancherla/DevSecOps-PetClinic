@@ -32,6 +32,26 @@ Ensure you have the following installed:
 - Git
 - A DockerHub account and personal access token
 
+## AUTOMATION
+The document details all the manual steps required to setup and run the project. This is good for learning.
+However, to speed things up, automation scripts have been created :
+- [k3d-setup.sh](k3d-setup.sh)
+- [k3d-teardown.sh](k3d-teardown.sh)
+- [makefile](makefile)
+
+Please refer to the following documents on how to run the automation:
+- [0001-Automation-1-Initial-setup.md](0001-Automation-1-Initial-setup.md)
+- [0001-Automation-2-Daily-usage.md](0001-Automation-2-Daily-usage.md)
+
+The automated steps are:
+- create docker volume - k3d-data
+- start k3d, with volume mapped
+- create jenkins namespace
+- create K8s PV and PVCs for caching artifacts
+- create a K8s secret to be consumed by Kaniko
+- prep k3d-kube-config file (for jenkins-to-K3d connectivity)
+- start docker services using docker compose
+
 ## Infrastructure Setup
 
 ### Step 0: Create K3d Cluster and Network
