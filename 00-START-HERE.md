@@ -214,6 +214,12 @@ Navigate to **Dashboard → Manage Jenkins → Security → Manage Credentials �
 - **ID**: `k8s-jenkins-sa-token`
 - **Description**: Service account token for jenkins-sa in k3d
 
+#### 4.1.1 Create KubeConfig Credential
+- **Kind**: Secret File
+- **Secret**: Upload the k3d-kubeconfig file from Step 0.3
+- **ID**: `k3d-kubeconfig`
+- **Description**: KubConfig File to access K3d Cluster
+
 #### 4.2 Create GitHub Credentials
 - **Kind**: Username with password
 - **Username**: Your GitHub username
